@@ -1,0 +1,33 @@
+[general]
+status_path = "~/.vdirsyncer/status/"
+
+# CONTACTS
+
+[storage local]
+type = "singlefile"
+path = "~/.contacts/%s.vcf"
+
+[storage locali]
+type = "filesystem"
+path = "~/.contacts/"
+fileext = ".vcf"
+
+[storage online]
+type = "carddav"
+url = "https://YOUR SERVER"
+username = "USERNAME"
+password = "PASSWORD"
+
+[pair contactsi]
+a = "locali"
+b = "online"
+collections = ["from a", "from b"]
+conflict_resolution = "b wins"
+
+# change the above line to "a wins" if you do your editing locally.
+
+[pair localsync]
+a = "locali"
+b = "local"
+collections = ["from a", "from b"]
+conflict_resolution = "a wins"
