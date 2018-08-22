@@ -1,7 +1,7 @@
 pplsearch
 ==========
 
-#pplsearch: An addressbook searcher for use with ppl, vdirsyncer, and a mess of vcards
+# pplsearch: An addressbook searcher for use with ppl, vdirsyncer, and a mess of vcards
 
 I really like [ppl](https://hnrysmth.github.io/ppl/) and the control it 
 can give you over your contacts. I was thrilled to find [vdirsyncer](https://github.com/pimutils/vdirsyncer) 
