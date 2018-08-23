@@ -37,7 +37,7 @@
         szAnswer="$1"
     fi
 
-    results=($(grep -Rl "$PPLDIR" --exclude-dir=.git -i -e "$szAnswer"))
+    results=($(grep -Rl "$PPLDIR" --exclude-dir=.git -i -e "$szAnswer" ))
     
     for ((i=0; i<${#results[@]}; ++i));
     do
@@ -45,14 +45,8 @@
         FileName[$i]=$(echo ${results[$i]})
         ShortFileName[$i]=$(basename ${FileName[$i]})
         Identifier[$i]="${ShortFileName[$i]%.*}"
-        if [ -z "$pplexe" ];then
-            PeopleName[$i]=$(grep ${FileName[$i]} -e "FN:" | awk -F ":" '{print $2}')
-        else
-            PeopleName[$i]=$(ppl name ${Identifier[$i]})
-        fi
+        PeopleName[$i]=$(grep ${FileName[$i]} -e "FN:" | awk -F ":" '{print $2}' | tr -d '\r')
     done
-    #echo "${PeopleName[@]}"
-    # if there's only one... maybe skip this step?
     if [ ${#results[@]} == 0 ];then
         zenity --error --text "No matches found!"
         exit
@@ -60,7 +54,7 @@
         i=0
     else
         buildstring=$(printf ' FALSE "%s" ' "${PeopleName[@]}")
-        choicecmdline="zenity --timeout 30 --list  --text 'Which to display?' --radiolist  --column 'Pick' --column 'Name' $buildstring"
+        choicecmdline="zenity --timeout 30 --list --height 400 --width 250 --text 'Which to display?' --radiolist  --column 'Pick' --column 'Name' $buildstring"
         ChosenName=$(eval "$choicecmdline")
         i=0
         for a in "${PeopleName[@]}"; do
@@ -68,8 +62,6 @@
             (( ++i ))
         done
     fi
-    #echo "${PeopleName[$i]}"
-    #echo "${Identifier[$i]}"
     if [ -z "$pplexe" ];then
         # This output needs to be cleaned up eventually
         cmdline="cat ${FileName[$i]} | zenity --text-info --width 400 --height 400 --title=${PeopleName[$i]} "
