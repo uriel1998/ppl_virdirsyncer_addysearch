@@ -54,7 +54,7 @@
         i=0
     else
         buildstring=$(printf ' FALSE "%s" ' "${PeopleName[@]}")
-        choicecmdline="zenity --timeout 30 --list --height 400 --width 250 --text 'Which to display?' --radiolist  --column 'Pick' --column 'Name' $buildstring"
+        choicecmdline="zenity --list --height 400 --width 250 --text 'Which to display?' --radiolist  --column 'Pick' --column 'Name' $buildstring"
         ChosenName=$(eval "$choicecmdline")
         i=0
         for a in "${PeopleName[@]}"; do
