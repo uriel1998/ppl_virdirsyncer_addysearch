@@ -43,6 +43,17 @@ sed, but the final output isn't quite as pretty.
 If you do not have `vdirsyncer` set up, you'll have to get the vcards 
 there some other way (say, exporting from your mail client).
 
+## Usage With Images
+
+Do exactly the same thing, except call `addressbookhelper_v`.sh . This 
+requires `imagemagick` and `base64` in order to pull out the image and 
+then trick `zenity` into showing it.
+
+The photo extraction is hugely derivative of [Alexx Roche's](https://stackoverflow.com/users/1153645/alexx-roche) 
+code on [Stack Overflow](https://stackoverflow.com/a/48660570) (and under a MIT license as well), 
+and the code to insert it into `zenity` is largely based off a post in 
+[comp.unix.shell](https://groups.google.com/forum/#!msg/comp.unix.shell/TlwIthcSFNg/0B4u1ymDN-YJ) by Ben Bacarisse in 2012. 
+
 ## Related
 
 The `vcardfixer.sh` script is there to simply fix some small irregularities 
