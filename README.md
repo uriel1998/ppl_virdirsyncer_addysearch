@@ -11,22 +11,18 @@ and the way it can sync your contacts. But I wanted a way to be able to
 quickly and easily search through my contacts for basic information and 
 to have a GUI to do it. So, `zenity` to the rescue.
 
+And yes, it *can* display contact photos.
 
 ## Requires
 
-
 * [zenity](https://help.gnome.org/users/zenity/stable/) or a replacement like [matedialog](https://github.com/mate-desktop/mate-dialogs) or [wenity](http://freecode.com/projects/wenity).
 
-
 ### Strongly encouraged
-
 
 * [vdirsyncer](https://github.com/pimutils/vdirsyncer) with the "filesystem" option
 * [ppl](https://hnrysmth.github.io/ppl/) 
 
-
 ## Usage
-
 
 Call the script (from the command line, a launcher, or an Openbox menu) 
 and it will search for any string in a directory full of vcards. If `ppl` 
@@ -47,7 +43,8 @@ there some other way (say, exporting from your mail client).
 
 Do exactly the same thing, except call `addressbookhelper_v`.sh . This 
 requires `imagemagick` and `base64` in order to pull out the image and 
-then trick `zenity` into showing it.
+then trick `zenity` into showing it. I kept it a separate file for 
+clarity and because so much of that code is from others (thank you!).
 
 The photo extraction is hugely derivative of [Alexx Roche's](https://stackoverflow.com/users/1153645/alexx-roche) 
 code on [Stack Overflow](https://stackoverflow.com/a/48660570) (and under a MIT license as well), 
