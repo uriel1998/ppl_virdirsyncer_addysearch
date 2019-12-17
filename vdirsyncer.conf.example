@@ -14,20 +14,18 @@ fileext = ".vcf"
 
 [storage online]
 type = "carddav"
-url = "https://YOUR SERVER"
-username = "USERNAME"
-password = "PASSWORD"
+url = "https://nextcloud.org"
+username = "EXAMPLE"
+password = "EXAMPLE"
+
+[pair contacts]
+a = "local"
+b = "online"
+collections = ["from a", "from b"]
+conflict_resolution = "b wins"
 
 [pair contactsi]
 a = "locali"
 b = "online"
 collections = ["from a", "from b"]
 conflict_resolution = "b wins"
-
-# change the above line to "a wins" if you do your editing locally.
-
-[pair localsync]
-a = "locali"
-b = "local"
-collections = ["from a", "from b"]
-conflict_resolution = "a wins"
