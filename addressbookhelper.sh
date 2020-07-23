@@ -16,18 +16,20 @@ MuttStyle="false"
 Images="false"
 CliOnly="false"
 RefreshVCards="false"
+APPDIR=$(dirname $(realpath "$0"))
+source "$APPDIR/vcardreader.sh"
 
 init (){
 
     if [ -f "$HOME/.config/addressbookhelper.rc" ];then
-        echo "dslkfjsdf"
-        readarray -t line < "$HOME/.config/addresbookhelper.rc"
+        readarray -t line < "$HOME/.config/addressbookhelper.rc"
         ContactsDir=${line[1]}
         #test line 3 first in case is empty or not true/false
         RefreshVCards=${line[3]}
     else
         ContactsDir=$PWD
     fi
+    
 
 }
 
@@ -62,65 +64,36 @@ photoextractor(){
 ##############################################################################
 
 choose_entry() {
-    if [ "$1" == "" ]; then 
-        szAnswer=$(zenity --timeout 30 --entry --text "What are we searching for?" --entry-text ""); echo $szAnswer
-    else
-        szAnswer="$1"
-    fi
-    echo "$ContactsDir"
-    echo "lsdk"
-    results=($(grep -Rl "$ContactsDir" --exclude-dir=.git -i -e "$szAnswer" ))
     
-    for ((i=0; i<${#results[@]}; ++i));
-    do
-        
-        FileName[$i]=$(echo ${results[$i]})
-        ShortFileName[$i]=$(basename ${FileName[$i]})
-        Identifier[$i]="${ShortFileName[$i]%.*}"
-        PeopleName[$i]=$(grep ${FileName[$i]} -e "FN:" | awk -F ":" '{print $2}' | tr -d '\r')
-    done
-    if [ ${#results[@]} == 0 ];then
-        #TODO: CATCH FOR CLI ONLY
-        zenity --error --text "No matches found!"
-        exit
-    elif [ ${#results[@]} == 1 ];then
-        i=0
+    
+    # Using fzf and rofi here REALLY took a lot of speed and weight off 
+    if [ "$CliOnly" == "true" ];then
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" | awk -F ':' '{print $2}' | realpath -p )
     else
-        #TODO: CATCH FOR CLI ONLY
-        buildstring=$(printf ' FALSE "%s" ' "${PeopleName[@]}")
-        choicecmdline="zenity --list --height 400 --width 250 --text 'Which to display?' --radiolist  --column 'Pick' --column 'Name' $buildstring"
-        ChosenName=$(eval "$choicecmdline")
-        i=0
-        for a in "${PeopleName[@]}"; do
-            [[ $a == "$ChosenName" ]] && { echo "$i"; break; }
-            (( ++i ))
-        done
+        #use ROFI, not zenity 
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" -theme DarkBlue | awk -F ':' '{print $2}' | realpath -p)
+    fi
+
+    if [ ! -f "$SelectedVcard" ];then
+        if [ "$CliOnly" == "true" ];then
+            echo "No matches found!"
+            exit 88
+        else
+            zenity --error --text "No matches found!"
+            exit 88
+        fi
     fi
     
 }
 
-##############################################################################
-# VCardReader
-##############################################################################
-read_vcard() {
-    
- 
-    #if display image switch
-    #if has image
-    #photoextractor
-    
-}
 
 ##############################################################################
 # Display the Entry
 ##############################################################################
 display_choice() {
     
-    #CLI CATCH HERE
-    #Ignores the -i switch, huh?
-    
-    SelectedVcard="${FileName[$i]}"
-    read_vcard
+    #sourced
+    result=$(read_vcard)
 
     #for displaying images; need to make sure base64 there and converts it to HTML
             if [ -f "$PicFileName" ];then
@@ -131,14 +104,11 @@ display_choice() {
             base64 "$PicFileName"
             echo "\">") | zenity --text-info --html --filename=/dev/stdin         
             rm "$PicFileName"
-    
-    if [ -z "$pplexe" ];then
+            fi
         # This output needs to be cleaned up eventually
-        cmdline="cat ${FileName[$i]} | zenity --text-info --width 400 --height 400 --title=${PeopleName[$i]} "
-    else
-
-    fi
-    eval "$cmdline"
+#        cmdline="cat ${FileName[$i]} | zenity --text-info --width 400 --height 400 --title=${PeopleName[$i]} "
+        echo "$result"
+ 
 }
 
 ##############################################################################
@@ -150,6 +120,7 @@ display_help(){
     # -i use images
     # -m mutt style response (just return email, implies cli only)
     # -c cli only 
+    echo "sdlfk"
 }
 
 ##############################################################################
@@ -158,19 +129,23 @@ display_help(){
 
 while [ $# -gt 0 ]; do
 option="$1"
-    case $option
-    in
+    case $option in
     -m) MuttStyle="true"
-    CliOnly="true"
-    shift ;;   
+        CliOnly="true"
+        shift ;;   
     -h) display_help
-    exit
-    shift ;;         
+        exit
+        shift ;;         
     -i) Images="false"
-    shift ;;      
+        shift ;;      
+    -c) CliOnly="true"
+        shift ;;      
     esac
 done    
 
 init
 choose_entry
 display_choice
+
+#fzf example for cli version
+#

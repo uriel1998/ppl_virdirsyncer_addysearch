@@ -1,0 +1,4 @@
+# Contacts VCF directory
+~/.contacts/
+# Refresh VCF before search
+true
