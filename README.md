@@ -1,8 +1,9 @@
 pplsearch
 ==========
 
-
 # pplsearch: An addressbook searcher for use with a mess of vcards
+
+![pplsearch logo](https://raw.githubusercontent.com/uriel1998/ppl_virdirsyncer_addysearch/master/pplsearch-open-graph.png "logo")
 
 ## Contents
  1. [About](#1-about)
