@@ -3,33 +3,20 @@
 ##############################################################################
 # Credits, blame, etc
 ##############################################################################
-#	pplsearch - a quick addressbook launcher (for openbox?)
-
-#   Requires ppl https://hnrysmth.github.io/ppl/
-#   Strongly helpful with vdirsyncer https://github.com/pimutils/vdirsyncer
+#	pplsearch - a quick addressbook viewer for GUI, TUI, and Mutt
+#   By Steven Saus
+##############################################################################
 
 ##############################################################################
 # Initialize
 ##############################################################################
 
+ContactsDir="~/.contacts/contacts"
 MuttStyle="false"
-Images="false"
 CliOnly="false"
-RefreshVCards="false"
 APPDIR=$(dirname $(realpath "$0"))
 source "$APPDIR/vcardreader.sh"
-
-init (){
-
-    if [ -f "$HOME/.config/addressbookhelper.rc" ];then
-        readarray -t line < "$HOME/.config/addressbookhelper.rc"
-        ContactsDir=${line[1]}
-        #test line 3 first in case is empty or not true/false
-        RefreshVCards=${line[3]}
-    else
-        ContactsDir=$PWD
-    fi
-}
+# My individual vcf files are in this directory
 
 
 ##############################################################################
@@ -37,7 +24,6 @@ init (){
 ##############################################################################
 
 choose_entry() {
-    
     
     # Using fzf and rofi here REALLY took a lot of speed and weight off 
     if [ "$CliOnly" == "true" ];then
@@ -67,31 +53,22 @@ display_choice() {
     
     #sourced
     result=$(read_vcard)
-    
     if [ "$CliOnly" == "true" ];then
         if [ "$MuttStyle" == "true" ];then
-            #need fzf and such here to find only email addresses if more than 1
-            echo "$result"
+            num_emails=$(echo -e "$result" | rg -c -e "✉" )
+            if [[ "$num_emails" -gt 1 ]];then
+                echo "$result" | rg -e "✉" | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Which email address?" | awk -F ': ' '{print $2}'
+            else
+                echo "$result" | rg -e "✉" | awk -F ': ' '{print $2 }'
+            fi 
         else
+            
             # use boxes here optionally
             echo "$result"
         fi
         
     else
-
-#TODO - below about displaying with ROFI
-#TODO - Maybe get rid of config file just for convenience sake? It's only the
-#contacts directory
-#TODO - remove "update vcard", because you should be using a different tool for that
-#TODO - remove mentions of images
-
-            #FOR FUCKS SAKE, maybe just rip this out and figure out how to display 
-        # results with rofi...rofi
-        # rofi -modi yourscript:./hr -show yourscript  < - this is how
-        
-        
-            echo "$result" | zenity --text-info --filename=/dev/stdin         
-        
+        echo "$result" | zenity --title="Contact info" --text-info --filename=/dev/stdin --height 200 --width 400
     fi
 
  
@@ -101,12 +78,12 @@ display_choice() {
 # Show the Help
 ##############################################################################
 display_help(){
-    #no switch, just argument - string to search for
-    # -h show help
-    # -i use images
-    # -m mutt style response (just return email, implies cli only)
-    # -c cli only 
-    echo "sdlfk"
+    echo "###################################################################"
+    echo "#  pplsearch.sh [-h|-m|-c]"
+    echo "# -h show help "
+    echo "# -m mutt style response (just return email, implies cli only) "
+    echo "# -c cli/tui interface only "
+    echo "###################################################################"
 }
 
 ##############################################################################
@@ -122,14 +99,11 @@ option="$1"
     -h) display_help
         exit
         shift ;;         
-    -i) Images="false"
-        shift ;;      
     -c) CliOnly="true"
         shift ;;      
     esac
 done    
 
-init
 choose_entry
 display_choice
 

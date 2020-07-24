@@ -2,27 +2,57 @@ pplsearch
 ==========
 
 
-# pplsearch: An addressbook searcher for use with ppl, vdirsyncer, and a mess of vcards
+# pplsearch: An addressbook searcher for use with a mess of vcards
 
+## Contents
+ 1. [About](#1-about)
+ 2. [License](#2-license)
+ 3. [Prerequisites](#3-prerequisites)
+ 4. [Installation](#4-installation)
+ 5. [Usage](#5-usage)
+ 6. [VCardreader](#6-vcardreader)
+ 7. [VCardfixer](#7-vcardfixer)
+ 8. [Tip](#8-tip)
+ 9. [TODO](#9-todo)
 
-I really like [ppl](https://hnrysmth.github.io/ppl/) and the control it 
-can give you over your contacts. I was thrilled to find [vdirsyncer](https://github.com/pimutils/vdirsyncer) 
-and the way it can sync your contacts. But I wanted a way to be able to 
-quickly and easily search through my contacts for basic information and 
-to have a GUI to do it. So, `zenity` to the rescue.
+***
 
-And yes, it *can* display contact photos.
+I really liked [ppl](https://web.archive.org/web/20170610235714/http://ppladdressbook.org/) and the control it 
+gave you over your contacts. I was thrilled to find [vdirsyncer](https://github.com/pimutils/vdirsyncer) 
+and the way it can sync your contacts with multiple services. But I wanted a way to be able to 
+quickly and easily search through my contacts for basic information and, if I wanted,  
+to have a GUI to do it. 
+
+As `ppl` is now defunct, this script has taken the place of accessing (though 
+not *editing*) my addressbook quickly and easily with a GUI or TUI.
+
+This is a complete overhaul from prior versions.
 
 ## Requires
 
-* [zenity](https://help.gnome.org/users/zenity/stable/) or a replacement like [matedialog](https://github.com/mate-desktop/mate-dialogs) or [wenity](http://freecode.com/projects/wenity).
+All of these are available in Debian (and presumably Ubuntu) as packages:
 
-### Strongly encouraged
+`sudo apt install vdirsyncer rofi fzf zenity ripgrep`
 
+* [zenity](https://help.gnome.org/users/zenity/stable/) or a drop-in replacement like [matedialog](https://github.com/mate-desktop/mate-dialogs) or 
+[wenity](http://freecode.com/projects/wenity) for viewing GUI output
+* [fzf](https://github.com/junegunn/fzf) - Provides TUI for selecting VCard
+* [rofi](https://github.com/davatorium/rofi) - Provides GUI for selecting VCard
 * [vdirsyncer](https://github.com/pimutils/vdirsyncer) with the "filesystem" option
-* [ppl](https://hnrysmth.github.io/ppl/) 
+* [ripgrep](https://github.com/BurntSushi/ripgrep) for faster grepping
+
+Trust me, you want to check out `fzf`, `rofi`, and `ripgrep` anyhow.
+
+## Installation
+
+Place the script somewhere in your PATH or symlink it to such.  
+If your VCards are somewhere other than `$HOME/.contacts/contacts` you will 
+need to edit line 14 to reflect the location of your contacts.
+
 
 ## Usage
+
+`pplsearch [-h|-m|-c]`
 
 Call the script (from the command line, a launcher, or an Openbox menu) 
 and it will search for any string in a directory full of vcards. If `ppl` 
@@ -39,17 +69,6 @@ sed, but the final output isn't quite as pretty.
 If you do not have `vdirsyncer` set up, you'll have to get the vcards 
 there some other way (say, exporting from your mail client).
 
-## Usage With Images
-
-Do exactly the same thing, except call `addressbookhelper_v`.sh . This 
-requires `imagemagick` and `base64` in order to pull out the image and 
-then trick `zenity` into showing it. I kept it a separate file for 
-clarity and because so much of that code is from others (thank you!).
-
-The photo extraction is hugely derivative of [Alexx Roche's](https://stackoverflow.com/users/1153645/alexx-roche) 
-code on [Stack Overflow](https://stackoverflow.com/a/48660570) (and under a MIT license as well), 
-and the code to insert it into `zenity` is largely based off a post in 
-[comp.unix.shell](https://groups.google.com/forum/#!msg/comp.unix.shell/TlwIthcSFNg/0B4u1ymDN-YJ) by Ben Bacarisse in 2012. 
 
 ## Related
 
@@ -61,10 +80,25 @@ script (though finding out that a rogue carriage return was causing me
 problems took forever), so if you have another field that's causing 
 problems, you can fix it.
 
+## Use your contacts as a git repository
+
+While slightly afield from the scope of this script, I found it useful to 
+make your contacts directory a git repository so that you can check and revert 
+changes from syncing.  
+
+Set up vdirsyncer properly, and when it's all configured, call it with a wrapper 
+script like this:
+
+```
+		/usr/bin/vdirsyncer sync  2>&1
+        # Your contacts directory goes here, obviously.
+        cd /home/steven/.contacts
+        git add .
+        git commit -a -m "automated sync"
+        git gc --auto --prune
+```
+
 ## Related vcard
 
 The scripts here presume the "filesystem" version where each contact is 
-a separate vcard. If you need one large vcard (such as for Claws mail) 
-see the example conf. Since Claws can only read the vcard, this setup 
-of syncing and conflict resolution from the cloud to individual vcards 
-to big vcard works.
+a separate vcard. 

@@ -14,15 +14,15 @@
 
 
 function read_vcard {
-
     cat "$SelectedVcard" | while read line ; do
 
     if [[ $line = EMAIL* ]]; then
         #starts it at one!
         (( ++num_emails ))
-        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' )
+        # removing the non-standardized "PREF" string 
+        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/,//' )
         if [ -z "$temp" ];then
-            email_type[$num_emails]="none"
+            email_type[$num_emails]="main"
         else
             email_type[$num_emails]=$(echo "$temp")
         fi
@@ -39,7 +39,8 @@ function read_vcard {
     fi
     if [[ "$line" =~ "TEL;" ]]; then
         (( ++num_tels ))
-        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}')
+        # removing the non-standardized "PREF" string 
+        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/,//' )
         if [ -z "$temp" ];then
             tel_type[$num_tels]="none"
         else
@@ -56,20 +57,30 @@ function read_vcard {
         full_name=${line#*:}
     fi
     if [[ "$line" =~ "END:VCARD" ]]; then
-        echo "$full_name"
-        echo "$org"
+        echo "  ✢ $full_name"
+        if [ ! -z "$org" ];then
+            echo "  ☖ $org"
+        fi
         START=1
         END="${num_tels[@]}"
-        for (( c=$START; c<=$END; c++ ));do
-            printf "%s: %s \n" "${tel_type[c]}" "${tel_num[c]}" 
-        done
+        if [[ $END -gt 0 ]];then
+            for (( c=$START; c<=$END; c++ ));do
+                printf "  ☎ %s: %s \n" "${tel_type[c]}" "${tel_num[c]}" 
+            done
+        else
+            printf "  ☎ No Phone number \n"
+            #printf "%s: %s \n" "${tel_type[0]}" "${tel_num[0]}" 
+        fi
         
         START=1
         END="${num_emails[@]}"
-        for (( c=$START; c<=$END; c++ ));do
-            printf "%s %s\n" "${email[c]}" "${email_type[c]}"
-            
-        done
+        if [[ $END -gt 1 ]];then
+            for (( c=$START; c<=$END; c++ ));do
+                printf "  ✉ %s: %s\n" "${email_type[c]}" "${email[c]}" 
+            done
+        else 
+            printf "  ✉ %s: %s\n" "${email_type[1]}" "${email[1]}" 
+        fi
     fi
 
     done
@@ -91,7 +102,7 @@ $(return >/dev/null 2>&1)
 
 # What exit code did that give?
 if [ "$?" -eq "0" ];then
-    echo "[info] Function read_vcard ready to go."
+    #echo "[info] Function read_vcard ready to go."
     OUTPUT=0
 else
     OUTPUT=1
