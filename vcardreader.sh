@@ -1,12 +1,11 @@
 #!/bin/bash
   
 ##############################################################################
-# muna, by Steven Saus 3 May 2020
+# vcardreader, by Steven Saus 24 July 2020
 # steven@stevesaus.com
-# Licenced under the Apache License
+# Licenced under the MIT License
 ##############################################################################  
-  
-  
+    
 # because this is a bash function, it's using the input variable $SelectedVcard 
 # and the arrays as the returned
 # variable.  So there's no real "return" other than setting that var.

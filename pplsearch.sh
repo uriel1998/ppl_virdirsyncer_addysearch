@@ -4,7 +4,8 @@
 # Credits, blame, etc
 ##############################################################################
 #	pplsearch - a quick addressbook viewer for GUI, TUI, and Mutt
-#   By Steven Saus
+#   by Steven Saus 24 July 2020
+#   Licenced under the MIT License
 ##############################################################################
 
 ##############################################################################

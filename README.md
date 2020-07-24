@@ -16,6 +16,7 @@ pplsearch
  9. [TODO](#9-todo)
 
 ***
+## 1. About 
 
 I really liked [ppl](https://web.archive.org/web/20170610235714/http://ppladdressbook.org/) and the control it 
 gave you over your contacts. I was thrilled to find [vdirsyncer](https://github.com/pimutils/vdirsyncer) 
@@ -28,7 +29,11 @@ not *editing*) my addressbook quickly and easily with a GUI or TUI.
 
 This is a complete overhaul from prior versions.
 
-## Requires
+## 2. License
+
+This project is licensed under the MIT License. For the full license, see `LICENSE`.
+
+## 3. Prerequisites
 
 All of these are available in Debian (and presumably Ubuntu) as packages:
 
@@ -43,44 +48,61 @@ All of these are available in Debian (and presumably Ubuntu) as packages:
 
 Trust me, you want to check out `fzf`, `rofi`, and `ripgrep` anyhow.
 
-## Installation
+## 4. Installation
 
-Place the script somewhere in your PATH or symlink it to such.  
+Place `pplsearch` and `vcardreader` in the same directory somewhere in your PATH.  
 If your VCards are somewhere other than `$HOME/.contacts/contacts` you will 
 need to edit line 14 to reflect the location of your contacts.
 
 
-## Usage
+## 5. Usage
 
 `pplsearch [-h|-m|-c]`
 
-Call the script (from the command line, a launcher, or an Openbox menu) 
-and it will search for any string in a directory full of vcards. If `ppl` 
-is installed, it will use the `ppl` configuration file to determine where 
-to search, otherwise it uses the current directory. 
+* -h : Show a very basic help file
+* -c : Run in cli/TUI mode 
+* -m : Run in Mutt mode
 
-If no matches are available, you'll be told, otherwise you will be able 
-to select from a list of full names (or given the single match if that's 
-the case). Then the full info of the person will be presented to you.
+Call `pplsearch` (from the command line, a launcher, Mutt, or an Openbox menu) 
+and it will quickly give you a list of names (through `fzf` in the terminal, or 
+using `rofi` on X. Select the name (and VCard) you want to use.
 
-If you do not have `ppl` installed, this will *work*, thanks to grep and 
-sed, but the final output isn't quite as pretty.
+In GUI mode, `pplsearch` will use `zenity` to nicely display the results. In 
+TUI mode, `pplsearch` will return the information to STDOUT.  In both cases, 
+black and white emojis are used to make things look a bit better.
+
+In Mutt mode, `pplsearch` will only return an email address, so can be used 
+for address completion by Mutt. If there is more than one email address for 
+that contact, it will use `fzf` again to let you choose the proper email.
 
 If you do not have `vdirsyncer` set up, you'll have to get the vcards 
 there some other way (say, exporting from your mail client).
 
+## 6. VCardreader
 
-## Related
+Yes, it's another VCard reader. This one is in bash. 
+
+It can be sourced to provide the function `read_vcard`. If sourced to provide 
+this function, it expects the variable `$SelectedVcard` to point to the VCard 
+you want to read. 
+
+It can also be used as a standalone VCard reader by specifying the full path and 
+filename of the VCard you wish to examine. For example,
+
+`vcardreader /home/steven/.contacts/contacts/VCard_is_here.vcf`
+
+## 7. VCardfixer
 
 The `vcardfixer.sh` script is there to simply fix some small irregularities 
-in individual vcards so that `ppl` can handle them properly. Currently 
-it handles the lack of the N: field (and properly swaps last and first 
-names) and the lack of an END:VCARD field. It's a pretty simple bash 
-script (though finding out that a rogue carriage return was causing me 
-problems took forever), so if you have another field that's causing 
-problems, you can fix it.
+in individual vcards. Currently it handles the lack of the N: field (and 
+properly swaps last and first names) and the lack of an END:VCARD field. 
+It's a pretty simple bash script (though finding out that a rogue carriage 
+return was causing me problems took forever), so if you have another field 
+that's causing problems, you can fix it.
 
-## Use your contacts as a git repository
+## 8. Tip
+
+Make your contacts into a git repository!
 
 While slightly afield from the scope of this script, I found it useful to 
 make your contacts directory a git repository so that you can check and revert 
@@ -98,7 +120,7 @@ script like this:
         git gc --auto --prune
 ```
 
-## Related vcard
+## 9. TODO
 
-The scripts here presume the "filesystem" version where each contact is 
-a separate vcard. 
+* Reintroduce image display with GUI version
+* Add in additional fields to the reader function (e.g. Title, Address)
