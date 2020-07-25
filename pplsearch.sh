@@ -30,7 +30,6 @@ choose_entry() {
     if [ "$CliOnly" == "true" ];then
         SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" | awk -F ':' '{print $2}' | realpath -p )
     else
-        #use ROFI, not zenity 
         SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" -theme DarkBlue | awk -F ':' '{print $2}' | realpath -p)
     fi
 
@@ -39,7 +38,7 @@ choose_entry() {
             echo "No matches found!"
             exit 88
         else
-            zenity --error --text "No matches found!"
+            rofi -e "No matches found!"
             exit 88
         fi
     fi
@@ -63,13 +62,10 @@ display_choice() {
                 echo "$result" | rg -e "✉" | awk -F ': ' '{print $2 }'
             fi 
         else
-            
-            # use boxes here optionally
-            echo "$result"
-        fi
-        
+            echo "$result" | tee >(xclip -i -selection primary) >(xclip -i -selection secondary) >(xclip -i -selection clipboard)
+        fi       
     else
-        echo "$result" | zenity --title="Contact info" --text-info --filename=/dev/stdin --height 200 --width 400
+        echo "$result" | tee >(xclip -i -selection primary) >(xclip -i -selection secondary) >(xclip -i -selection clipboard) >(rofi -e "$result")
     fi
 
  

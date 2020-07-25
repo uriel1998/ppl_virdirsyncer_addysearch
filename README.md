@@ -38,10 +38,10 @@ This project is licensed under the MIT License. For the full license, see `LICEN
 
 All of these are available in Debian (and presumably Ubuntu) as packages:
 
-`sudo apt install vdirsyncer rofi fzf zenity ripgrep`
+`sudo apt install vdirsyncer rofi fzf xclip ripgrep tee`
 
-* [zenity](https://help.gnome.org/users/zenity/stable/) or a drop-in replacement like [matedialog](https://github.com/mate-desktop/mate-dialogs) or 
-[wenity](http://freecode.com/projects/wenity) for viewing GUI output
+* [tee](https://www.computerhope.com/unix/utee.htm) - for redirecting output
+* [xclip](https://github.com/astrand/xclip) - for copying output to the clipboard
 * [fzf](https://github.com/junegunn/fzf) - Provides TUI for selecting VCard
 * [rofi](https://github.com/davatorium/rofi) - Provides GUI for selecting VCard
 * [vdirsyncer](https://github.com/pimutils/vdirsyncer) with the "filesystem" option
@@ -68,9 +68,10 @@ Call `pplsearch` (from the command line, a launcher, Mutt, or an Openbox menu)
 and it will quickly give you a list of names (through `fzf` in the terminal, or 
 using `rofi` on X. Select the name (and VCard) you want to use.
 
-In GUI mode, `pplsearch` will use `zenity` to nicely display the results. In 
+In GUI mode, `pplsearch` will use `rofi` to nicely display the results. In 
 TUI mode, `pplsearch` will return the information to STDOUT.  In both cases, 
-black and white emojis are used to make things look a bit better.
+the results are copies to *all* clipboards using `tee` and `xclip` automatically.
+Black and white emojis are used to make things look a bit better.
 
 In Mutt mode, `pplsearch` will only return an email address, so can be used 
 for address completion by Mutt. If there is more than one email address for 
@@ -123,5 +124,5 @@ script like this:
 
 ## 9. TODO
 
-* Reintroduce image display with GUI version
 * Add in additional fields to the reader function (e.g. Title, Address)
+* Optionalize the emojis
