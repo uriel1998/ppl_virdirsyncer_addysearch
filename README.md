@@ -124,5 +124,9 @@ script like this:
 
 ## 9. TODO
 
+* Known issue: Some rofi themes wrap the selection line and try to make it fit 
+in one row (arthur, in particular) while others gracefully chop it and it looks 
+great. 
+
 * Add in additional fields to the reader function (e.g. Title, Address)
 * Optionalize the emojis
