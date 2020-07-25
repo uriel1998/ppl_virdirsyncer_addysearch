@@ -30,7 +30,7 @@ choose_entry() {
     if [ "$CliOnly" == "true" ];then
         SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" | awk -F ':' '{print $2}' | realpath -p )
     else
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" -theme DarkBlue | awk -F ':' '{print $2}' | realpath -p)
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' | realpath -p)
     fi
 
     if [ ! -f "$SelectedVcard" ];then
