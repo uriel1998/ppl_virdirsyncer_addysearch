@@ -5,6 +5,9 @@ pplsearch
 
 ![pplsearch logo](https://raw.githubusercontent.com/uriel1998/ppl_virdirsyncer_addysearch/master/pplsearch-open-graph.png "logo")
 
+![pplsearch in action](https://raw.githubusercontent.com/uriel1998/ppl_virdirsyncer_addysearch/master/example.gif "qi in action")  
+If the above is too small, you can see it on [terminalizer](https://terminalizer.com/view/5253cd694217) 
+
 ## Contents
  1. [About](#1-about)
  2. [License](#2-license)

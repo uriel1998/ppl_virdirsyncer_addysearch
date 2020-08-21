@@ -108,7 +108,16 @@ else
     if [ "$#" = 0 ];then
         echo "Please call this as a function or with the filename as the first argument."
     else
-        SelectedVcard="$1"
+        if [ -f "$1" ];then
+            SelectedVcard="$1"
+        else
+            #if it's coming from pplsearch for preview
+            SelectedVcard=$(echo "$1" | awk -F ':' '{print $2}' | realpath -p)
+        fi
+        if [ ! -f "$SelectedVcard" ];then
+            echo "File not found..."
+            exit 1
+        fi
         SUCCESS=0
         output=$(read_vcard)
         if [ $SUCCESS -eq 0 ];then
