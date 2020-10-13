@@ -17,8 +17,8 @@ MuttStyle="false"
 CliOnly="false"
 APPDIR=$(dirname $(realpath "$0"))
 source "$APPDIR/vcardreader.sh"
+RealPathSub=""
 # My individual vcf files are in this directory
-
 
 ##############################################################################
 # Entry Chooser
@@ -28,11 +28,16 @@ choose_entry() {
     
     # Using fzf and rofi here REALLY took a lot of speed and weight off 
     if [ "$CliOnly" == "true" ];then
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' | realpath -p )
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
     else
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' | realpath -p)
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' )
     fi
-
+    # Added to avoid the realpath -p switch
+    SelectedVcard=$(realpath "${SelectedVcard}")
+    
+    
+    
+    
     if [ ! -f "$SelectedVcard" ];then
         if [ "$CliOnly" == "true" ];then
             echo "No matches found!"
