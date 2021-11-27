@@ -36,6 +36,25 @@ function read_vcard {
     if [[ $line = ORG:* ]]; then
         org=${line#*:}
     fi
+    
+    ### Address portion here like the TEL portion
+
+    if [[ "$line" =~ "ADR;" ]]; then
+        (( ++num_adr ))
+        # removing the non-standardized "PREF" string 
+        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/,//' )
+        if [ -z "$temp" ];then
+            adr_type[$num_adr]="none"
+        else
+            adr_type[$num_adr]=$(echo "$temp")
+        fi
+        adr_type[$num_adr]=${temp//[$'\t\r\n']}
+        temp=""    
+        temp=$(echo "$line" | awk -F ':' '{print $2}' | sed 's/;/,/g' | sed 's/^,,//' | | sed 's/,$//')
+        tel_adr[$num_adr]=${temp//[$'\t\r\n']}
+    line=""    
+    fi
+    
     if [[ "$line" =~ "TEL;" ]]; then
         (( ++num_tels ))
         # removing the non-standardized "PREF" string 
