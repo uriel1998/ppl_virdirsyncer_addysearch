@@ -50,8 +50,9 @@ function read_vcard {
         fi
         adr_type[$num_adr]=${temp//[$'\t\r\n']}
         temp=""    
-        temp=$(echo "$line" | awk -F ':' '{print $2}' | sed 's/;/,/g' | sed 's/^,,//' | | sed 's/,$//')
-        tel_adr[$num_adr]=${temp//[$'\t\r\n']}
+        temp=$(echo "$line" | awk -F ':' '{print $2}' | sed 's/;/,/g' | sed 's/^,,//' | sed 's/,,/,/g' )
+        temp=${temp//[$'\t\r\n']}
+        address[$num_adr]=$(echo "$temp" | sed 's/,$//')
     line=""    
     fi
     
@@ -91,6 +92,16 @@ function read_vcard {
         fi
         
         START=1
+        END="${num_adr[@]}"
+        if [[ $END -gt 1 ]];then
+            for (( c=$START; c<=$END; c++ ));do
+                printf "  🏚 %s: %s\n" "${adr_type[c]}" "${address[c]}" 
+            done
+        else 
+            printf "  🏚 %s: %s\n" "${adr_type[1]}" "${address[1]}" 
+        fi
+        
+        START=1
         END="${num_emails[@]}"
         if [[ $END -gt 1 ]];then
             for (( c=$START; c<=$END; c++ ));do
@@ -98,7 +109,7 @@ function read_vcard {
             done
         else 
             printf "  ✉ %s: %s\n" "${email_type[1]}" "${email[1]}" 
-        fi
+        fi        
     fi
 
     done
