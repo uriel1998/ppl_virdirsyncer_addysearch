@@ -39,6 +39,7 @@ function read_vcard {
         (( ++num_adr ))
         # removing the non-standardized "PREF" string 
         temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/;label//'| sed 's/,//' )
+        
         if [ -z "$temp" ];then
             adr_type[$num_adr]="none"
         else
