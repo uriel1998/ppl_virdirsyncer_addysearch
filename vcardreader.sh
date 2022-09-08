@@ -29,20 +29,16 @@ function read_vcard {
         temp=""
         temp=$(echo "$line" | awk -F ':' '{print $2}')
         email[$num_emails]=${temp//[$'\t\r\n']}
-        
-    line=""
-        
+        line=""
     fi
     if [[ $line = ORG:* ]]; then
         org=${line#*:}
     fi
     
-    ### Address portion here like the TEL portion
-
     if [[ "$line" =~ "ADR;" ]]; then
         (( ++num_adr ))
         # removing the non-standardized "PREF" string 
-        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/,//' )
+        temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/;label//'| sed 's/,//' )
         if [ -z "$temp" ];then
             adr_type[$num_adr]="none"
         else
@@ -50,10 +46,17 @@ function read_vcard {
         fi
         adr_type[$num_adr]=${temp//[$'\t\r\n']}
         temp=""    
+        # testing to see if the address continues, using grep, of all things.
+        testcount=$(grep ADR --after-context=1 "${SelectedVcard}" | tail -1 | grep -c -e "^\ ")
+        if [ $testcount -gt 0 ];then
+            line=$(grep ADR --after-context=1 "${SelectedVcard}" | sed 's/^[[:space:]]*//')
+            line=${line//[$'\t\r\n']}
+        fi
         temp=$(echo "$line" | awk -F ':' '{print $2}' | sed 's/;/,/g' | sed 's/^,,//' | sed 's/,,/,/g' )
         temp=${temp//[$'\t\r\n']}
         address[$num_adr]=$(echo "$temp" | sed 's/,$//')
-    line=""    
+
+        line=""    
     fi
     
     if [[ "$line" =~ "TEL;" ]]; then
@@ -69,7 +72,7 @@ function read_vcard {
         temp=""    
         temp=$(echo "$line" | awk -F ':' '{print $2}')
         tel_num[$num_tels]=${temp//[$'\t\r\n']}
-    line=""    
+        line=""    
     fi
     #TODO catch if not FN, put together
     if [[ $line = FN:* ]]; then
