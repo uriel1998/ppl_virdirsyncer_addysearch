@@ -146,7 +146,7 @@ else
             SelectedVcard="$1"
         else
             #if it's coming from pplsearch for preview
-            SelectedVcard=$(echo "$1" | awk -F ':' '{print $2}' | realpath -p)
+            SelectedVcard=$(echo "$1" | awk -F ':' '{print $2}' | xargs -I {} realpath {} )
         fi
         if [ ! -f "$SelectedVcard" ];then
             echo "File not found..."
