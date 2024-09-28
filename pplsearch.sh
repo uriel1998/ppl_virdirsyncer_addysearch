@@ -3,7 +3,7 @@
 ##############################################################################
 # Credits, blame, etc
 ##############################################################################
-#	pplsearch - a quick addressbook viewer for GUI, TUI, and Mutt
+#   pplsearch - a quick addressbook viewer for GUI, TUI, and Mutt
 #   by Steven Saus 24 July 2020
 #   Licenced under the MIT License
 ##############################################################################
@@ -18,6 +18,7 @@ CliOnly="false"
 APPDIR=$(dirname $(realpath "$0"))
 source "$APPDIR/vcardreader.sh"
 RealPathSub=""
+Query=""
 # My individual vcf files are in this directory
 
 ##############################################################################
@@ -25,10 +26,10 @@ RealPathSub=""
 ##############################################################################
 
 choose_entry() {
-    
+    echo "${Query}"
     # Using fzf and rofi here REALLY took a lot of speed and weight off 
     if [ "$CliOnly" == "true" ];then
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
+        SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf -q "${Query}" --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
     else
         SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' )
     fi
@@ -103,10 +104,14 @@ option="$1"
         shift ;;         
     -c) CliOnly="true"
         shift ;;      
+    *) Query="${Query} ${1}"
+        shift 
+        ;;
     esac
 done    
 
-choose_entry
+
+choose_entry "${Query}"
 display_choice
 
 #fzf example for cli version
