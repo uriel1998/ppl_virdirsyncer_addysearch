@@ -13,6 +13,9 @@
 
 
 function read_vcard {
+	# this is because I was going to do something to remove them overall
+	# but forgot that I was searching for them lol
+	declare array1=("  ✢" "  ☖" "  ☎" "  🏚" "  ✉")
     cat "$SelectedVcard" | while read line ; do
 
     if [[ $line = EMAIL* ]]; then
@@ -80,18 +83,18 @@ function read_vcard {
         full_name=${line#*:}
     fi
     if [[ "$line" =~ "END:VCARD" ]]; then
-        echo "  ✢ $full_name"
+        echo "${array1[0]} $full_name"
         if [ ! -z "$org" ];then
-            echo "  ☖ $org"
+            echo "${array1[1]} $org"
         fi
         START=1
         END="${num_tels[@]}"
         if [[ $END -gt 0 ]];then
             for (( c=$START; c<=$END; c++ ));do
-                printf "  ☎ %s: %s \n" "${tel_type[c]}" "${tel_num[c]}" 
+                printf "${array1[2]} %s: %s \n" "${tel_type[c]}" "${tel_num[c]}" 
             done
         else
-            printf "  ☎ No Phone number \n"
+            printf "${array1[2]} 000-000-0000 \n"
             #printf "%s: %s \n" "${tel_type[0]}" "${tel_num[0]}" 
         fi
         
@@ -99,20 +102,20 @@ function read_vcard {
         END="${num_adr[@]}"
         if [[ $END -gt 1 ]];then
             for (( c=$START; c<=$END; c++ ));do
-                printf "  🏚 %s: %s\n" "${adr_type[c]}" "${address[c]}" 
+                printf "${array1[3]} %s: %s\n" "${adr_type[c]}" "${address[c]}" 
             done
         else 
-            printf "  🏚 %s: %s\n" "${adr_type[1]}" "${address[1]}" 
+            printf "${array1[3]} %s: %s\n" "${adr_type[1]}" "${address[1]}" 
         fi
         
         START=1
         END="${num_emails[@]}"
         if [[ $END -gt 1 ]];then
             for (( c=$START; c<=$END; c++ ));do
-                printf "  ✉ %s: %s\n" "${email_type[c]}" "${email[c]}" 
+                printf "%s %s: %s\n" "${array1[4]}" "${email_type[c]}" "${email[c]}" 
             done
         else 
-            printf "  ✉ %s: %s\n" "${email_type[1]}" "${email[1]}" 
+            printf "%s %s: %s\n" "${array1[4]}" "${email_type[1]}" "${email[1]}" 
         fi        
     fi
 

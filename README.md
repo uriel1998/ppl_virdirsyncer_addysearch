@@ -55,7 +55,7 @@ Trust me, you want to check out `fzf`, `rofi`, and `ripgrep` anyhow.
 ## 4. Installation
 
 Place `pplsearch` and `vcardreader` in the same directory somewhere in your PATH.  
-If your VCards are somewhere other than `$HOME/.contacts/contacts` you will 
+If your VCards are somewhere other than `$HOME/.contacts` you will 
 need to edit line 14 to reflect the location of your contacts.
 
 

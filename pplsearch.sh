@@ -12,8 +12,9 @@
 # Initialize
 ##############################################################################
 SCRIPTDIR="$( cd "$(dirname "$0")" ; pwd -P )"
-ContactsDir="/home/steven/.contacts/nextcloud/contacts"
+ContactsDir="$HOME/.contacts"
 MuttStyle="false"
+VOIPStyle="false"
 CliOnly="false"
 APPDIR=$(dirname $(realpath "$0"))
 source "$APPDIR/vcardreader.sh"
@@ -27,18 +28,31 @@ Query=""
 
 choose_entry() {
     echo "${Query}"
-    # Using fzf and rofi here REALLY took a lot of speed and weight off 
+    # Using fzf and rofi here REALLY took a lot of speed and weight off
     if [ "$CliOnly" == "true" ];then
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf -q "${Query}" --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
+        # using an array instead, and hiding vcard elements to make it prettier
+        declare -a Name=()
+        declare -a VCARD_Filename=()
+
+        while IFS= read -r Line; do
+            Filename="${Line%%:*}"
+            NameField="${Line#*:FN:}"
+            Name+=("${NameField}")
+            VCARD_Filename+=("${Filename}")
+        done < <( rg -H '^FN:' /home/steven/.contacts/nextcloud/contacts/* )
+        Index="$(for i in "${!Name[@]}"; do
+                printf '%s\t%s\t%s\n' "${i}" "${Name[${i}]}" "${VCARD_Filename[${i}]}"
+                done | fzf \
+                -q "${Query}" --no-hscroll --height 50% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview 'vcardreader.sh {3}'  \
+                | awk -F '\t' '{print $1}')"
+        SelectedVcard=$(printf '%s\n' "${VCARD_Filename[${Index}]}")
+        #SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf -q "${Query}" --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
     else
+        # way more complicated for rofi, and not my main use case.
         SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' )
     fi
     # Added to avoid the realpath -p switch
     SelectedVcard=$(realpath "${SelectedVcard}")
-    
-    
-    
-    
     if [ ! -f "$SelectedVcard" ];then
         if [ "$CliOnly" == "true" ];then
             echo "No matches found!"
@@ -48,7 +62,6 @@ choose_entry() {
             exit 88
         fi
     fi
-    
 }
 
 
@@ -56,25 +69,36 @@ choose_entry() {
 # Display the Entry
 ##############################################################################
 display_choice() {
-    
+
     #sourced
     result=$(read_vcard)
     if [ "$CliOnly" == "true" ];then
+		if [ "$VOIPStyle" == "true" ];then
+			num_phones=$(echo -e "$result" | rg -c -e "☎" )
+            if [[ "$num_phones" -gt 1 ]];then
+                echo "$result" | rg -e "☎" | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Which phone number?" | awk -F ': ' '{print $2}'
+            else
+                echo "$result" | rg -e "☎" | awk -F ': ' '{print $2 }'
+            fi
+            # exit the program here! It's for voip, we just want phone.
+            exit 0
+		fi
+			
         if [ "$MuttStyle" == "true" ];then
             num_emails=$(echo -e "$result" | rg -c -e "✉" )
             if [[ "$num_emails" -gt 1 ]];then
                 echo "$result" | rg -e "✉" | fzf --no-hscroll -m --height 50% --border --ansi --no-bold --header "Which email address?" | awk -F ': ' '{print $2}'
             else
                 echo "$result" | rg -e "✉" | awk -F ': ' '{print $2 }'
-            fi 
-        else
+            fi
+            # exit the program here! It's for mutt, we just want email.
+            exit 0
+		else
             echo "$result" | tee >(xclip -i -selection primary) >(xclip -i -selection secondary) >(xclip -i -selection clipboard)
-        fi       
+        fi
     else
         echo "$result" | tee >(xclip -i -selection primary) >(xclip -i -selection secondary) >(xclip -i -selection clipboard) >(rofi -e "$result")
     fi
-
- 
 }
 
 ##############################################################################
@@ -85,34 +109,35 @@ display_help(){
     echo "#  pplsearch.sh [-h|-m|-c]"
     echo "# -h show help "
     echo "# -m mutt style response (just return email, implies cli only) "
+    echo "# -v returning only the phone, for linphone, etc, implies cli only)"
     echo "# -c cli/tui interface only "
     echo "###################################################################"
 }
 
 ##############################################################################
-# Sort out commandline options    
-##############################################################################    
+# Sort out commandline options
+##############################################################################
 
 while [ $# -gt 0 ]; do
 option="$1"
     case $option in
+    -v) VOIPStyle="true"
+        CliOnly="true"
+        shift ;;
     -m) MuttStyle="true"
         CliOnly="true"
-        shift ;;   
+        shift ;;
     -h) display_help
         exit
-        shift ;;         
+        shift ;;
     -c) CliOnly="true"
-        shift ;;      
+        shift ;;
     *) Query="${Query} ${1}"
-        shift 
+        shift
         ;;
     esac
-done    
+done
 
 
 choose_entry "${Query}"
 display_choice
-
-#fzf example for cli version
-#
