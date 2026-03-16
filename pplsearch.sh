@@ -39,12 +39,20 @@ choose_entry() {
             NameField="${Line#*:FN:}"
             Name+=("${NameField}")
             VCARD_Filename+=("${Filename}")
-        done < <( rg -H '^FN:' /home/steven/.contacts/nextcloud/contacts/* )
+        done < <( rg -H '^FN:' "${ContactsDir}"* )
+		if [ "$VOIPStyle" == "true" ];then        
+        Index="$(for i in "${!Name[@]}"; do
+                printf '%s\t%s\t%s\n' "${i}" "${Name[${i}]}" "${VCARD_Filename[${i}]}"
+                done | fzf \
+                -q "${Query}" --no-hscroll --height 100% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview 'vcardreader.sh {3}'  \
+                | awk -F '\t' '{print $1}')"
+		else
         Index="$(for i in "${!Name[@]}"; do
                 printf '%s\t%s\t%s\n' "${i}" "${Name[${i}]}" "${VCARD_Filename[${i}]}"
                 done | fzf \
                 -q "${Query}" --no-hscroll --height 50% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview 'vcardreader.sh {3}'  \
-                | awk -F '\t' '{print $1}')"
+                | awk -F '\t' '{print $1}')"		
+		fi
         SelectedVcard=$(printf '%s\n' "${VCARD_Filename[${Index}]}")
         #SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf -q "${Query}" --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
     else
