@@ -16,7 +16,7 @@ ContactsDir="$HOME/.contacts"
 MuttStyle="false"
 VOIPStyle="false"
 CliOnly="false"
-APPDIR=$(dirname $(realpath "$0"))
+APPDIR=$(dirname "$(realpath "$0")")
 source "$APPDIR/vcardreader.sh"
 RealPathSub=""
 Query=""
@@ -27,37 +27,60 @@ Query=""
 ##############################################################################
 
 choose_entry() {
-    echo "${Query}"
+    declare -a Name=()
+    declare -a VCARD_Filename=()
+
+    while IFS=$'\t' read -r Filename NameField; do
+        Name+=("${NameField}")
+        VCARD_Filename+=("${Filename}")
+    done < <(
+        rg -H -g '*.vcf' '(^BEGIN:VCARD|^FN:[^[:space:]].*)' "$ContactsDir" | \
+        awk '
+            {
+                split($0, parts, ":")
+                filename=parts[1]
+                line=substr($0, length(filename) + 2)
+                sub(/\r$/, "", line)
+
+                if (line == "BEGIN:VCARD") {
+                    begins[filename]++
+                } else if (line ~ /^FN:[^[:space:]].*/ && !(filename in fn)) {
+                    fn[filename]=substr(line, 4)
+                }
+            }
+            END {
+                for (filename in begins) {
+                    if (begins[filename] == 1 && (filename in fn) && fn[filename] != "") {
+                        printf "%s\t%s\n", filename, fn[filename]
+                    }
+                }
+            }
+        '
+    )
+
     # Using fzf and rofi here REALLY took a lot of speed and weight off
     if [ "$CliOnly" == "true" ];then
-        # using an array instead, and hiding vcard elements to make it prettier
-        declare -a Name=()
-        declare -a VCARD_Filename=()
-
-        while IFS= read -r Line; do
-            Filename="${Line%%:*}"
-            NameField="${Line#*:FN:}"
-            Name+=("${NameField}")
-            VCARD_Filename+=("${Filename}")
-        done < <( rg -H '^FN:' "${ContactsDir}"* )
 		if [ "$VOIPStyle" == "true" ];then        
         Index="$(for i in "${!Name[@]}"; do
                 printf '%s\t%s\t%s\n' "${i}" "${Name[${i}]}" "${VCARD_Filename[${i}]}"
                 done | fzf \
-                -q "${Query}" --no-hscroll --height 100% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview 'vcardreader.sh {3}'  \
+                -q "${Query}" --no-hscroll --height 100% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview "$APPDIR/vcardreader.sh {3}"  \
                 | awk -F '\t' '{print $1}')"
 		else
         Index="$(for i in "${!Name[@]}"; do
                 printf '%s\t%s\t%s\n' "${i}" "${Name[${i}]}" "${VCARD_Filename[${i}]}"
                 done | fzf \
-                -q "${Query}" --no-hscroll --height 50% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview 'vcardreader.sh {3}'  \
+                -q "${Query}" --no-hscroll --height 50% --border --ansi --no-bold --header "Whose Vcard?" --delimiter=$'\t' --with-nth=2 --preview "$APPDIR/vcardreader.sh {3}"  \
                 | awk -F '\t' '{print $1}')"		
 		fi
         SelectedVcard=$(printf '%s\n' "${VCARD_Filename[${Index}]}")
         #SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | fzf -q "${Query}" --no-hscroll -m --height 50% --border --ansi --no-bold --header "Whose Vcard?" --preview="$SCRIPTDIR/vcardreader.sh {}"  | awk -F ':' '{print $2}' )
     else
         # way more complicated for rofi, and not my main use case.
-        SelectedVcard=$(rg "FN:" /home/steven/.contacts/nextcloud/contacts/* | awk -F ':' '{print $3 ":" $1 }' | rofi -i -dmenu -p "Whose Vcard?" | awk -F ':' '{print $2}' )
+        Index="$(for i in "${!Name[@]}"; do
+                printf '%s\t%s\n' "${Name[${i}]}" "${VCARD_Filename[${i}]}"
+                done | rofi -i -dmenu -p "Whose Vcard?" | awk -F '\t' '{print $2}')"
+        SelectedVcard=$(printf '%s\n' "${Index}")
     fi
     # Added to avoid the realpath -p switch
     SelectedVcard=$(realpath "${SelectedVcard}")

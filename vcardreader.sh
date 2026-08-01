@@ -16,7 +16,27 @@ function read_vcard {
 	# this is because I was going to do something to remove them overall
 	# but forgot that I was searching for them lol
 	declare array1=("  ✢" "  ☖" "  ☎" "  🏚" "  ✉")
-    cat "$SelectedVcard" | while read line ; do
+    declare -a email_type=()
+    declare -a email=()
+    declare -a adr_type=()
+    declare -a address=()
+    declare -a tel_type=()
+    declare -a tel_num=()
+    num_emails=0
+    num_adr=0
+    num_tels=0
+    full_name=""
+    org=""
+    prevline=""
+    ContinuedLine="false"
+    while IFS= read -r line || [ -n "$line" ]; do
+    rawline="$line"
+    ContinuedLine="false"
+
+    if [[ $line = [[:space:]]* ]]; then
+        line="${prevline}$(echo "$line" | sed 's/^[[:space:]]*//')"
+        ContinuedLine="true"
+    fi
 
     if [[ $line = EMAIL* ]]; then
         #starts it at one!
@@ -39,7 +59,9 @@ function read_vcard {
     fi
     
     if [[ "$line" =~ "ADR;" ]]; then
-        (( ++num_adr ))
+        if [ "$ContinuedLine" != "true" ];then
+            (( ++num_adr ))
+        fi
         # removing the non-standardized "PREF" string 
         temp=$(echo "$line" | awk -F = '{ print $2 }' | awk -F : '{print $1}' | awk '{print tolower($0)}' | sed 's/pref//' | sed 's/;label//'| sed 's/,//' )
         
@@ -49,13 +71,6 @@ function read_vcard {
             adr_type[$num_adr]=$(echo "$temp")
         fi
         adr_type[$num_adr]=${temp//[$'\t\r\n']}
-        temp=""    
-        # testing to see if the address continues, using grep, of all things.
-        testcount=$(grep ADR --after-context=1 "${SelectedVcard}" | tail -1 | grep -c -e "^\ ")
-        if [ $testcount -gt 0 ];then
-            line=$(grep ADR --after-context=1 "${SelectedVcard}" | sed 's/^[[:space:]]*//')
-            line=${line//[$'\t\r\n']}
-        fi
         temp=$(echo "$line" | awk -F ':' '{print $2}' | sed 's/;/,/g' | sed 's/^,,//' | sed 's/,,/,/g' )
         temp=${temp//[$'\t\r\n']}
         address[$num_adr]=$(echo "$temp" | sed 's/,$//')
@@ -88,7 +103,7 @@ function read_vcard {
             echo "${array1[1]} $org"
         fi
         START=1
-        END="${num_tels[@]}"
+        END="$num_tels"
         if [[ $END -gt 0 ]];then
             for (( c=$START; c<=$END; c++ ));do
                 printf "${array1[2]} %s: %s \n" "${tel_type[c]}" "${tel_num[c]}" 
@@ -99,7 +114,7 @@ function read_vcard {
         fi
         
         START=1
-        END="${num_adr[@]}"
+        END="$num_adr"
         if [[ $END -gt 1 ]];then
             for (( c=$START; c<=$END; c++ ));do
                 printf "${array1[3]} %s: %s\n" "${adr_type[c]}" "${address[c]}" 
@@ -109,7 +124,7 @@ function read_vcard {
         fi
         
         START=1
-        END="${num_emails[@]}"
+        END="$num_emails"
         if [[ $END -gt 1 ]];then
             for (( c=$START; c<=$END; c++ ));do
                 printf "%s %s: %s\n" "${array1[4]}" "${email_type[c]}" "${email[c]}" 
@@ -119,7 +134,8 @@ function read_vcard {
         fi        
     fi
 
-    done
+    prevline="$rawline"
+    done < "$SelectedVcard"
 
 }
 
@@ -134,10 +150,7 @@ function read_vcard {
 # Try to execute a `return` statement,
 # but do it in a sub-shell and catch the results.
 # If this script isn't sourced, that will raise an error.
-$(return >/dev/null 2>&1)
-
-# What exit code did that give?
-if [ "$?" -eq "0" ];then
+if (return >/dev/null 2>&1); then
     #echo "[info] Function read_vcard ready to go."
     OUTPUT=0
 else
@@ -149,7 +162,8 @@ else
             SelectedVcard="$1"
         else
             #if it's coming from pplsearch for preview
-            SelectedVcard=$(echo "$1" | awk -F ':' '{print $2}' | xargs -I {} realpath {} )
+            SelectedVcard=${1#*:}
+            SelectedVcard=$(realpath "$SelectedVcard")
         fi
         if [ ! -f "$SelectedVcard" ];then
             echo "File not found..."
@@ -165,4 +179,3 @@ else
         fi
     fi
 fi
-

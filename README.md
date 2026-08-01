@@ -133,3 +133,9 @@ great.
 
 * Add in additional fields to the reader function (e.g. Title, Address)
 * Optionalize the emojis
+
+## Busywork Only AI/LLM Use
+
+![button_busywork-only](https://i.imgur.com/44dMXUl.png)
+
+An AI/LLM was used for busywork related to this repository.  This may include one or more of the following: documentation, locating bugs, or commit messages.  
